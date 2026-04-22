@@ -1,9 +1,37 @@
 return {
     blipData = {
-        sprite = 478,
-        color = 0,
-        scale = 0.6,
-        display = 4,
+        owner = {
+            sprite = 478,
+            color = 2,
+            scale = 0.6,
+            display = 4,
+            enabled = true,
+            category = 57,
+        },
+        owned = {
+            sprite = 478,
+            color = 1,
+            scale = 0.6,
+            display = 4,
+            enabled = true,
+            category = 56,
+        },
+        unowned = {
+            sprite = 478,
+            color = 0,
+            scale = 0.6,
+            display = 4,
+            enabled = true,
+            category = 58,
+        },
+        expired = {
+            sprite = 478,
+            color = 6,
+            scale = 0.6,
+            display = 4,
+            enabled = true,
+            category = 59,
+        },
     },
 
     RaidProperty = function()
@@ -36,6 +64,6 @@ return {
         interact = 'E',
     },
 
-    targetEnabled = true, -- Set to true if you want to enable the target system [only ox_target]
-    storageInteractDistance = 1.25, -- The distance to interact with the storage [distance for ox_target and radius for the ox_lib zone if ox_target is not used]
+    targetEnabled = true,
+    storageInteractDistance = 1.25,
 }
