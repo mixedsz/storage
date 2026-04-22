@@ -12,7 +12,7 @@ end
 
 if IsDuplicityVersion() then
     function RegisterStash(name, label, maxSlots, maxWeight, coords)
-        exports.ox_inventory:RegisterStash(name, label, maxSlots, maxWeight, nil, nil, coords)
+        exports.ox_inventory:RegisterStash(name, label, maxSlots, maxWeight)
     end
 
     function DeleteInventory(storageId)

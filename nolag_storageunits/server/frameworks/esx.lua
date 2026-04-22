@@ -29,12 +29,18 @@ function ServerFramework.getPlayerSourceByIdentifier(identifier)
     return xPlayer.source
 end
 
-local adminGroups = { superadmin = true, admin = true, mod = true }
+local adminGroups = (function()
+    local t = {}
+    for _, g in ipairs(sharedConfig.adminGroups or { 'superadmin', 'admin', 'mod' }) do
+        t[g] = true
+    end
+    return t
+end)()
 
 function ServerFramework.isPlayerAuthorizedToManage(source)
     local xPlayer = ESX.GetPlayerFromId(source)
     if not xPlayer then return false end
-    -- ESX group check (superadmin/admin/mod always permitted)
+    -- ESX group check (any group listed in config.shared adminGroups)
     if adminGroups[xPlayer.getGroup()] then return true end
     -- ACE permission check
     if IsPlayerAceAllowed(tostring(source), 'nolag_storageunits.manage') then return true end
