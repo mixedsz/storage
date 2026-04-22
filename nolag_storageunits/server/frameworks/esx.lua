@@ -29,9 +29,16 @@ function ServerFramework.getPlayerSourceByIdentifier(identifier)
     return xPlayer.source
 end
 
+local adminGroups = { superadmin = true, admin = true, mod = true }
+
 function ServerFramework.isPlayerAuthorizedToManage(source)
     local xPlayer = ESX.GetPlayerFromId(source)
     if not xPlayer then return false end
+    -- ESX group check (superadmin/admin/mod always permitted)
+    if adminGroups[xPlayer.getGroup()] then return true end
+    -- ACE permission check
+    if IsPlayerAceAllowed(tostring(source), 'nolag_storageunits.manage') then return true end
+    -- Job-based check via config
     for jobName, grade in pairs(sharedConfig.realEstateJobs) do
         if xPlayer.job.name == jobName and xPlayer.job.grade >= grade then
             return true
@@ -59,3 +66,8 @@ function ServerFramework.removeBankMoney(source, amount)
     xPlayer.removeAccountMoney('bank', amount)
     return true
 end
+
+-- Sync group to client on player load so client-side admin check stays accurate
+AddEventHandler('esx:playerLoaded', function(playerId, xPlayer)
+    TriggerClientEvent('nolag_storageunits:client:setGroup', playerId, xPlayer.getGroup())
+end)

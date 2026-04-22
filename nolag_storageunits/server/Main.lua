@@ -53,6 +53,10 @@ AddEventHandler('onResourceStart', function(resourceName)
     end
 end)
 
+lib.callback.register('nolag_storageunits:server:isAuthorizedToManage', function(source)
+    return ServerFramework.isPlayerAuthorizedToManage(source)
+end)
+
 lib.callback.register('nolag_storageunits:server:getStorages', function(source)
     local storages = DB_GetAllStorages()
     local result = {}
