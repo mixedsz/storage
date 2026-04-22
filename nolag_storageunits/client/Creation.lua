@@ -74,7 +74,7 @@ function RayCastGamePlayCamera(distance, cameraData)
     return hit, hitCoords
 end
 
-lib.disableControls.Add({ 24, 25 })
+lib.disableControls:Add({ 24, 25 })
 
 local pointSelectionActive = false
 
