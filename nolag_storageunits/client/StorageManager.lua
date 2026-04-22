@@ -1,146 +1,62 @@
-local L0_1, L1_1, L2_1
-L0_1 = lib
-if not L0_1 then
-  return
+if not lib then return end
+
+local StorageManagerClass = lib.class("StorageManager")
+
+function StorageManagerClass:constructor()
+    self.haveLoadedStorages = false
+    self.storages = {}
 end
-L0_1 = lib
-L0_1 = L0_1.class
-L1_1 = "StorageManager"
-L0_1 = L0_1(L1_1)
-function L1_1(A0_2)
-  local L1_2
-  A0_2.haveLoadedStorages = false
-  L1_2 = {}
-  A0_2.storages = L1_2
-end
-L0_1.constructor = L1_1
-function L1_1(A0_2)
-  local L1_2, L2_2, L3_2, L4_2, L5_2, L6_2, L7_2, L8_2, L9_2, L10_2, L11_2
-  L1_2 = lib
-  L1_2 = L1_2.print
-  L1_2 = L1_2.debug
-  L2_2 = "Loading storages from database "
-  L3_2 = tostring
-  L4_2 = A0_2.haveLoadedStorages
-  L3_2 = L3_2(L4_2)
-  L2_2 = L2_2 .. L3_2
-  L1_2(L2_2)
-  L1_2 = A0_2.haveLoadedStorages
-  if L1_2 then
-    return
-  end
-  A0_2.haveLoadedStorages = true
-  L1_2 = lib
-  L1_2 = L1_2.callback
-  L1_2 = L1_2.await
-  L2_2 = "nolag_storageunits:server:getStorages"
-  L3_2 = false
-  L1_2 = L1_2(L2_2, L3_2)
-  L2_2 = pairs
-  L3_2 = L1_2
-  L2_2, L3_2, L4_2, L5_2 = L2_2(L3_2)
-  for L6_2, L7_2 in L2_2, L3_2, L4_2, L5_2 do
-    L9_2 = A0_2
-    L8_2 = A0_2.createStorage
-    L10_2 = L6_2
-    L11_2 = L7_2
-    L8_2(L9_2, L10_2, L11_2)
-  end
-end
-L0_1.loadStoragesFromDatabase = L1_1
-function L1_1(A0_2)
-  local L1_2, L2_2, L3_2, L4_2, L5_2, L6_2, L7_2, L8_2
-  L1_2 = lib
-  L1_2 = L1_2.print
-  L1_2 = L1_2.debug
-  L2_2 = "Deleting all storages"
-  L1_2(L2_2)
-  L1_2 = pairs
-  L2_2 = A0_2.storages
-  L1_2, L2_2, L3_2, L4_2 = L1_2(L2_2)
-  for L5_2, L6_2 in L1_2, L2_2, L3_2, L4_2 do
-    if L6_2 then
-      L7_2 = L6_2.id
-      if L7_2 then
-        L8_2 = L6_2
-        L7_2 = L6_2.delete
-        L7_2(L8_2)
-        L6_2 = nil
-      end
+
+function StorageManagerClass:loadStoragesFromDatabase()
+    lib.print.debug("Loading storages from database " .. tostring(self.haveLoadedStorages))
+    if self.haveLoadedStorages then return end
+    self.haveLoadedStorages = true
+
+    local storages = lib.callback.await("nolag_storageunits:server:getStorages", false)
+    for id, data in pairs(storages) do
+        self:createStorage(id, data)
     end
-  end
-  L1_2 = {}
-  A0_2.storages = L1_2
-  A0_2.haveLoadedStorages = false
 end
-L0_1.deleteAllStorages = L1_1
-function L1_1(A0_2, A1_2, A2_2)
-  local L3_2, L4_2, L5_2, L6_2
-  L3_2 = lib
-  L3_2 = L3_2.print
-  L3_2 = L3_2.debug
-  L4_2 = "Creating property: "
-  L5_2 = A1_2
-  L4_2 = L4_2 .. L5_2
-  L3_2(L4_2)
-  L3_2 = A0_2.storages
-  L3_2 = L3_2[A1_2]
-  if L3_2 then
-    L3_2 = lib
-    L3_2 = L3_2.print
-    L3_2 = L3_2.debug
-    L4_2 = "Storage with id: "
-    L5_2 = A1_2
-    L6_2 = " already exists"
-    L4_2 = L4_2 .. L5_2 .. L6_2
-    L3_2(L4_2)
-    L3_2 = A0_2.storages
-    L3_2 = L3_2[A1_2]
-    return L3_2
-  end
-  L3_2 = Storage
-  L4_2 = L3_2
-  L3_2 = L3_2.new
-  L5_2 = A1_2
-  L6_2 = A2_2
-  L3_2 = L3_2(L4_2, L5_2, L6_2)
-  L4_2 = A0_2.storages
-  L4_2[A1_2] = L3_2
-  return L3_2
+
+function StorageManagerClass:deleteAllStorages()
+    lib.print.debug("Deleting all storages")
+    for id, storage in pairs(self.storages) do
+        if storage and storage.id then
+            storage:delete()
+        end
+    end
+    self.storages = {}
+    self.haveLoadedStorages = false
 end
-L0_1.createStorage = L1_1
-function L1_1(A0_2)
-  local L1_2
-  L1_2 = A0_2.storages
-  return L1_2
+
+function StorageManagerClass:createStorage(id, data)
+    lib.print.debug("Creating property: " .. id)
+    if self.storages[id] then
+        lib.print.debug("Storage with id: " .. id .. " already exists")
+        return self.storages[id]
+    end
+
+    local storage = Storage:new(id, data)
+    self.storages[id] = storage
+    return storage
 end
-L0_1.getStorages = L1_1
-function L1_1(A0_2)
-  local L1_2
-  L1_2 = A0_2.haveLoadedStorages
-  return L1_2
+
+function StorageManagerClass:getStorages()
+    return self.storages
 end
-L0_1.hasLoaded = L1_1
-function L1_1(A0_2, A1_2)
-  local L2_2
-  L2_2 = A0_2.storages
-  L2_2 = L2_2[A1_2]
-  return L2_2
+
+function StorageManagerClass:hasLoaded()
+    return self.haveLoadedStorages
 end
-L0_1.getStorageById = L1_1
-function L1_1(A0_2, A1_2)
-  local L2_2, L3_2
-  L2_2 = A0_2.storages
-  L2_2 = L2_2[A1_2]
-  L3_2 = L2_2
-  L2_2 = L2_2.delete
-  L2_2(L3_2)
-  L2_2 = A0_2.storages
-  L2_2[A1_2] = nil
+
+function StorageManagerClass:getStorageById(id)
+    return self.storages[id]
 end
-L0_1.deleteStorageById = L1_1
-L2_1 = L0_1
-L1_1 = L0_1.new
-L1_1 = L1_1(L2_1)
-StorageManager = L1_1
-return L0_1
+
+function StorageManagerClass:deleteStorageById(id)
+    local storage = self.storages[id]
+    storage:delete()
+    self.storages[id] = nil
+end
+
+StorageManager = StorageManagerClass:new()

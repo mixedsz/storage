@@ -2,7 +2,7 @@ return {
     debug = false,
 
     --[[
-        * ox_inventory (Recommended - don't use the other shit ones)
+        * ox_inventory (Recommended)
         * qb-inventory
         * qs-inventory
         * chezza
@@ -28,7 +28,7 @@ return {
 
     --[[
         * ox_lib
-        * discord (you need to setup the webhook in custom/logs/discord.lua)
+        * discord (configure the webhook in custom/logs/discord.lua)
     --]]
     logs = 'discord',
 
@@ -56,5 +56,9 @@ return {
     defaultWeight = 1500000,
 
     maxSlots = 40,
-    maxWeight = 2500000
+    maxWeight = 2500000,
+
+    enableManualPaymentRetry = true,
+
+    paymentCheckInterval = 60,
 }
