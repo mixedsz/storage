@@ -19,9 +19,16 @@ PlayerData = {
     group = ESXPlayerData.group or 'user',
 }
 
+local adminGroupSet = (function()
+    local t = {}
+    for _, g in ipairs(sharedConfig.adminGroups or { 'superadmin', 'admin', 'mod' }) do
+        t[g] = true
+    end
+    return t
+end)()
+
 local function isAdminGroup()
-    local group = PlayerData.group or 'user'
-    return group == 'admin' or group == 'superadmin' or group == 'mod'
+    return adminGroupSet[PlayerData.group or 'user'] == true
 end
 
 Framework = {
