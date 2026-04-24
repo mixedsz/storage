@@ -29,12 +29,18 @@ function ServerFramework.getPlayerSourceByIdentifier(identifier)
     return xPlayer.source
 end
 
-local adminGroups = { superadmin = true, admin = true, mod = true }
+local adminGroups = (function()
+    local t = {}
+    for _, g in ipairs(sharedConfig.adminGroups or { 'superadmin', 'admin', 'mod' }) do
+        t[g] = true
+    end
+    return t
+end)()
 
 function ServerFramework.isPlayerAuthorizedToManage(source)
     local xPlayer = ESX.GetPlayerFromId(source)
     if not xPlayer then return false end
-    -- ESX group check (superadmin/admin/mod always permitted)
+    -- ESX group check (any group listed in config.shared adminGroups)
     if adminGroups[xPlayer.getGroup()] then return true end
     -- ACE permission check
     if IsPlayerAceAllowed(tostring(source), 'nolag_storageunits.manage') then return true end
@@ -65,6 +71,20 @@ function ServerFramework.removeBankMoney(source, amount)
     if bankMoney < amount then return false end
     xPlayer.removeAccountMoney('bank', amount)
     return true
+end
+
+-- Used for automatic rent collection when the player is offline
+function ServerFramework.removeOfflineBankMoney(identifier, amount)
+    local row = MySQL.single.await(
+        "SELECT money FROM accounts WHERE identifier = ? AND name = 'bank'",
+        { identifier }
+    )
+    if not row or row.money < amount then return false end
+    local affected = MySQL.update.await(
+        "UPDATE accounts SET money = money - ? WHERE identifier = ? AND name = 'bank' AND money >= ?",
+        { amount, identifier, amount }
+    )
+    return (affected or 0) > 0
 end
 
 -- Sync group to client on player load so client-side admin check stays accurate

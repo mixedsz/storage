@@ -54,6 +54,9 @@ local function processExpiredStorages()
 
         if ownerSource then
             paymentSuccess = ServerFramework.removeBankMoney(ownerSource, storage.price)
+        elseif ServerFramework.removeOfflineBankMoney then
+            -- Owner is offline — charge their bank account directly via DB
+            paymentSuccess = ServerFramework.removeOfflineBankMoney(storage.owner, storage.price)
         end
 
         if paymentSuccess then

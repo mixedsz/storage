@@ -116,7 +116,11 @@ end)
 
 lib.callback.register('nolag_storageunits:server:validatePassword', function(source, storageId, password)
     if not storageId or not password then return false end
-    return DB_ValidatePassword(tonumber(storageId), tostring(password))
+    local valid = DB_ValidatePassword(tonumber(storageId), tostring(password))
+    if valid and ForceOpenInventory then
+        ForceOpenInventory(source, tonumber(storageId))
+    end
+    return valid
 end)
 
 lib.callback.register('nolag_storageunits:server:rentStorage', function(source, storageId, password)
@@ -426,6 +430,10 @@ lib.callback.register('nolag_storageunits:server:raidStorage', function(source, 
         string.format(locale('logs_raided_storage'), name, storageId, storage.label),
         'warning'
     )
+
+    if ForceOpenInventory then
+        ForceOpenInventory(source, storageId)
+    end
 
     return true
 end)

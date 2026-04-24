@@ -173,6 +173,8 @@ function Storage:updateData(data)
     self.inventory = data.inventory
     self.forever = data.forever
 
+    self.blip.enabled = data.blip
+
     local shouldShow = self:shouldShowBlip()
 
     if data.blip == false then
@@ -189,8 +191,6 @@ function Storage:updateData(data)
             self:createBlip()
         end
     end
-
-    self.blip.enabled = data.blip
 end
 
 function Storage:manage()
@@ -596,7 +596,7 @@ function Storage:raid()
             OpenInventory(self)
         end
     else
-        Utils.Notify("storage_raid_failed", "error", 5000)
+        Utils.Notify("storage_raid_fail", "error", 5000)
     end
 end
 
@@ -655,7 +655,7 @@ AddStateBagChangeHandler("", "global", function(bagName, key, value, reserved, r
     end
 end)
 
-local function buildStorageMetadata(storage, expirationData)
+local function buildStorageMetadata(storage, expirationData, ownerName)
     local metadata = {}
 
     if storage:isRented() then
@@ -703,7 +703,7 @@ local function buildStorageMetadata(storage, expirationData)
     if storage:isOwned() then
         metadata[#metadata + 1] = {
             label = locale("renter"),
-            value = storage:getOwnerNames()
+            value = ownerName or storage.owner
         }
     end
 
@@ -739,9 +739,17 @@ function manageStorages()
         expirationData = lib.callback.await("nolag_storageunits:server:getStoragesExpirationData", false, ownedStorageIds)
     end
 
+    -- Pre-fetch owner names so we don't await inside the loop
+    local ownerNames = {}
+    for id, storage in pairs(storages) do
+        if storage:isOwned() and storage.owner then
+            ownerNames[storage.owner] = lib.callback.await("nolag_storageunits:server:getPlayerNames", false, storage.owner)
+        end
+    end
+
     local options = {}
     for id, storage in pairs(storages) do
-        local metadata = buildStorageMetadata(storage, expirationData[storage.id])
+        local metadata = buildStorageMetadata(storage, expirationData[storage.id], ownerNames[storage.owner])
         options[#options + 1] = Utils.CreateMenuOption(storage.label, nil, "fas fa-box", function()
             storage:adminManage()
         end, metadata, true)

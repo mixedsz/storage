@@ -12,7 +12,7 @@ end
 
 if IsDuplicityVersion() then
     function RegisterStash(name, label, maxSlots, maxWeight, coords)
-        exports.ox_inventory:RegisterStash(name, label, maxSlots, maxWeight, nil, nil, coords)
+        exports.ox_inventory:RegisterStash(name, label, maxSlots, maxWeight)
     end
 
     function DeleteInventory(storageId)
@@ -23,7 +23,7 @@ if IsDuplicityVersion() then
         exports.ox_inventory:forceOpenInventory(playerId, 'stash', "Storage_" .. storageId)
     end
 else
-    function OpenInventory(storage)
-        exports.ox_inventory:openInventory('stash', "Storage_" .. storage.id)
-    end
+    -- Server force-opens the stash via ForceOpenInventory after password validation.
+    -- Client-side openInventory is not needed for ox_inventory.
+    function OpenInventory(storage) end
 end

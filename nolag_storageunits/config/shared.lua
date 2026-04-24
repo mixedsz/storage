@@ -42,6 +42,10 @@ return {
     ]]
     banking = "snipe-banking",
 
+    -- ESX groups that are allowed to manage storages (/storages, /createstorage, etc.)
+    -- Add your custom admin groups here (e.g. 'owner', 'manager')
+    adminGroups = { 'superadmin', 'admin', 'mod', 'owner' },
+
     realEstateJobs = {
         ['realestate'] = 0,
     },
