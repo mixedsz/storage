@@ -64,6 +64,6 @@ return {
         interact = 'E',
     },
 
-    targetEnabled = true,
+    targetEnabled = false,
     storageInteractDistance = 1.25,
 }

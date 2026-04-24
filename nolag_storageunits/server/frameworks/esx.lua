@@ -73,6 +73,20 @@ function ServerFramework.removeBankMoney(source, amount)
     return true
 end
 
+-- Used for automatic rent collection when the player is offline
+function ServerFramework.removeOfflineBankMoney(identifier, amount)
+    local row = MySQL.single.await(
+        "SELECT money FROM accounts WHERE identifier = ? AND name = 'bank'",
+        { identifier }
+    )
+    if not row or row.money < amount then return false end
+    local affected = MySQL.update.await(
+        "UPDATE accounts SET money = money - ? WHERE identifier = ? AND name = 'bank' AND money >= ?",
+        { amount, identifier, amount }
+    )
+    return (affected or 0) > 0
+end
+
 -- Sync group to client on player load so client-side admin check stays accurate
 AddEventHandler('esx:playerLoaded', function(playerId, xPlayer)
     TriggerClientEvent('nolag_storageunits:client:setGroup', playerId, xPlayer.getGroup())
