@@ -39,14 +39,14 @@ local function processExpiredStorages()
             label          = row.label,
             first_rented_date    = row.first_rented_date,
             expiring_date        = row.expiring_date,
-            expired              = row.expired == 1,
+            expired              = row.expired == true or row.expired == 1,
             failed_payments      = row.failed_payments,
             next_payment_attempt = row.next_payment_attempt,
             rental_days    = row.rental_days,
             price          = row.price,
-            blip           = row.blip == 1,
+            blip           = row.blip == true or row.blip == 1,
             inventory      = inventory,
-            forever        = row.forever == 1,
+            forever        = row.forever == true or row.forever == 1,
         }
 
         local ownerSource = ServerFramework.getPlayerSourceByIdentifier(storage.owner)
