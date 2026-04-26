@@ -54,8 +54,7 @@ function Storage:createZones()
             radius = clientConfig.storageInteractDistance,
             debug = sharedConfig.debug,
             onEnter = function()
-                local key = PrimaryKeybind:getCurrentKey()
-                Utils.AddInteraction(locale("keybind_open", key), function()
+                Utils.AddInteraction(locale("keybind_open", clientConfig.keybinds.interact), function()
                     self:manage()
                 end)
             end,
@@ -620,8 +619,7 @@ function LoadStorages()
 end
 
 local function handlePlayerLoaded()
-    if not PlayerData.firstSpawn then
-        PlayerData.firstSpawn = true
+    if not StorageManager:hasLoaded() then
         LoadStorages()
     end
 end
@@ -631,11 +629,17 @@ RegisterNetEvent(OnPlayerLoadedEvent, function()
     handlePlayerLoaded()
 end)
 
+RegisterNetEvent(OnPlayerUnloadedEvent, function()
+    PlayerData.loaded = false
+    StorageManager:deleteAllStorages()
+end)
+
 AddEventHandler("onResourceStart", function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
-    Wait(2000)
-    PlayerData.loaded = true
-    handlePlayerLoaded()
+    Wait(3000)
+    if PlayerData.loaded then
+        handlePlayerLoaded()
+    end
 end)
 
 AddStateBagChangeHandler("", "global", function(bagName, key, value, reserved, replicated)
@@ -716,7 +720,8 @@ local function buildStorageMetadata(storage, expirationData, ownerName)
 end
 
 function manageStorages()
-    if not Framework.isPlayerAuthorizedToManageStorages() then
+    local authorized = lib.callback.await("nolag_storageunits:server:isAuthorizedToManage", false)
+    if not authorized then
         Utils.Notify("not_authorized", "error", 5000)
         return
     end
@@ -768,3 +773,36 @@ function manageStorages()
 end
 
 exports("manageStorages", manageStorages)
+
+-- Single global thread that draws a marker at every storage within range
+CreateThread(function()
+    local cfg = clientConfig.markerConfig
+    if not cfg or not cfg.enabled then return end
+    while true do
+        if PlayerData.loaded then
+            local storages = StorageManager:getStorages()
+            local playerCoords = GetEntityCoords(cache.ped)
+            local anyNearby = false
+            for _, storage in pairs(storages) do
+                if storage and storage.coords then
+                    local dist = #(playerCoords - vector3(storage.coords.x, storage.coords.y, storage.coords.z))
+                    if dist <= cfg.renderDistance then
+                        anyNearby = true
+                        DrawMarker(
+                            cfg.type,
+                            storage.coords.x, storage.coords.y, storage.coords.z,
+                            0.0, 0.0, 0.0,
+                            0.0, 0.0, 0.0,
+                            cfg.sizeX, cfg.sizeY, cfg.sizeZ,
+                            cfg.r, cfg.g, cfg.b, cfg.a,
+                            false, true, 2, nil, nil, false
+                        )
+                    end
+                end
+            end
+            Wait(anyNearby and 0 or 300)
+        else
+            Wait(1000)
+        end
+    end
+end)

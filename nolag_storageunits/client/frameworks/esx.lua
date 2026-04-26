@@ -82,29 +82,10 @@ RegisterNetEvent('nolag_storageunits:client:setGroup', function(group)
     PlayerData.group = group
 end)
 
-local function checkAuthorizedToManage(cb)
-    -- Ask server for authoritative answer, avoids relying on client-side group/job state alone
-    lib.callback('nolag_storageunits:server:isAuthorizedToManage', false, function(authorized)
-        cb(authorized)
-    end)
-end
-
 RegisterCommand('createstorage', function(source, args, raw)
-    checkAuthorizedToManage(function(authorized)
-        if not authorized then
-            lib.notify({ type = 'error', description = locale('not_authorized'), duration = 4000 })
-            return
-        end
-        exports.nolag_storageunits:createStorage()
-    end)
+    exports.nolag_storageunits:createStorage()
 end, false)
 
 RegisterCommand('storages', function(source, args, raw)
-    checkAuthorizedToManage(function(authorized)
-        if not authorized then
-            lib.notify({ type = 'error', description = locale('not_authorized'), duration = 4000 })
-            return
-        end
-        exports.nolag_storageunits:manageStorages()
-    end)
+    exports.nolag_storageunits:manageStorages()
 end, false)

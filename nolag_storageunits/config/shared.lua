@@ -11,10 +11,6 @@ return {
 
     --[[
         * ox_lib
-        * jg-textui
-        * okokTextUI
-        * ps-ui
-        * qb-DrawText
     --]]
     textui = 'ox_lib',
 
@@ -33,14 +29,9 @@ return {
     logs = 'discord',
 
     --[[
-        * tgg-banking
-        * Renewed-Banking
-        * snipe-banking
-        * okokBanking
-        * fd_banking
         * default (qb-banking or qb-management; esx_addonaccount)
     ]]
-    banking = "snipe-banking",
+    banking = "default",
 
     -- ESX groups that are allowed to manage storages (/storages, /createstorage, etc.)
     -- Add your custom admin groups here (e.g. 'owner', 'manager')

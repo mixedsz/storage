@@ -40,8 +40,10 @@ end)()
 function ServerFramework.isPlayerAuthorizedToManage(source)
     local xPlayer = ESX.GetPlayerFromId(source)
     if not xPlayer then return false end
-    -- ESX group check (any group listed in config.shared adminGroups)
-    if adminGroups[xPlayer.getGroup()] then return true end
+    -- ESX group check — handles both "admin" and "group.admin" formats
+    local group = xPlayer.getGroup() or ''
+    local shortGroup = group:match("^group%.(.+)$") or group
+    if adminGroups[group] or adminGroups[shortGroup] then return true end
     -- ACE permission check
     if IsPlayerAceAllowed(tostring(source), 'nolag_storageunits.manage') then return true end
     -- Job-based check via config

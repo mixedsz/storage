@@ -66,4 +66,17 @@ return {
 
     targetEnabled = false,
     storageInteractDistance = 1.25,
+
+    markerConfig = {
+        enabled = true,
+        type = 1,           -- 1 = upward cylinder
+        sizeX = 0.8,
+        sizeY = 0.8,
+        sizeZ = 0.5,
+        r = 30,
+        g = 100,
+        b = 255,
+        a = 120,
+        renderDistance = 15.0,
+    },
 }
