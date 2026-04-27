@@ -281,6 +281,12 @@ function Storage:open()
             local success = lib.callback.await("nolag_storageunits:server:buyStorage", false, tonumber(self.id), password)
             if success then
                 Utils.Notify("storage_bought", "success", 5000)
+                -- Auto-open the storage right after purchase using the password just set
+                Wait(300)
+                local valid = lib.callback.await("nolag_storageunits:server:validatePassword", false, self.id, password)
+                if valid then
+                    OpenInventory(self)
+                end
             else
                 Utils.Notify("something_went_wrong", "error", 5000)
             end
@@ -309,6 +315,12 @@ function Storage:open()
                     dayText = string.format(locale("day_plural"), self.rental_days)
                 end
                 Utils.Notify(string.format(locale("rented_storage"), dayText), "success", 5000)
+                -- Auto-open the storage right after renting using the password just set
+                Wait(300)
+                local valid = lib.callback.await("nolag_storageunits:server:validatePassword", false, self.id, password)
+                if valid then
+                    OpenInventory(self)
+                end
             end
         end
     end
@@ -477,11 +489,9 @@ function Storage:adminManage()
         end
     end
 
-    if Framework.isPlayerAuthorizedToDeleteStorage() then
-        options[#options + 1] = Utils.CreateMenuOption("locale_delete_storage", nil, "fas fa-trash", function()
-            self:destroy()
-        end)
-    end
+    options[#options + 1] = Utils.CreateMenuOption("locale_delete_storage", nil, "fas fa-trash", function()
+        self:destroy()
+    end)
 
     lib.registerContext({
         id = "storageunits_manage",
@@ -637,9 +647,10 @@ end)
 AddEventHandler("onResourceStart", function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
     Wait(3000)
-    if PlayerData.loaded then
-        handlePlayerLoaded()
-    end
+    -- After a restart the Lua state is fresh so PlayerData.loaded is nil.
+    -- Set it here to handle players already in-game when the resource restarts.
+    PlayerData.loaded = true
+    handlePlayerLoaded()
 end)
 
 AddStateBagChangeHandler("", "global", function(bagName, key, value, reserved, replicated)
